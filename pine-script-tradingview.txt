@@ -1,0 +1,35 @@
+//@version=5
+indicator("Forex RSI Screener - Multi Timeframe", overlay=false)
+
+// Paramètres RSI
+rsiLength = input.int(14, title="RSI Length")
+
+// Liste des paires Forex
+symbols = input.symbols([
+    "FX_IDC:EURUSD", "FX_IDC:GBPUSD", "FX_IDC:USDJPY", "FX_IDC:USDCHF", 
+    "FX_IDC:AUDUSD", "FX_IDC:USDCAD", "FX_IDC:NZDUSD", "FX_IDC:EURGBP",
+    "FX_IDC:EURJPY", "FX_IDC:GBPEUR"
+])
+
+// Fonction pour récupérer le RSI d'un symbole sur un timeframe donné
+get_rsi(sym, tf) =>
+    [rsiVal] = request.security(sym, tf, ta.rsi(close, rsiLength))
+    rsiVal
+
+// Récupération des RSI
+rsi1h = get_rsi(symbols, "60")
+rsi4h = get_rsi(symbols, "240")
+rsi1d = get_rsi(symbols, "D")
+
+// Détection de surachat/survente
+overbought = rsi1h > 70 or rsi4h > 70 or rsi1d > 70
+oversold = rsi1h < 30 or rsi4h < 30 or rsi1d < 30
+
+// Affichage conditionnel
+plotshape(overbought, title="Overbought", location=location.absolute, color=color.red, style=shape.triangledown, size=size.small)
+plotshape(oversold, title="Oversold", location=location.absolute, color=color.green, style=shape.triangleup, size=size.small)
+
+// Affichage des valeurs RSI
+plot(rsi1h, title="RSI 1H", color=color.blue)
+plot(rsi4h, title="RSI 4H", color=color.orange)
+plot(rsi1d, title="RSI 1D", color=color.purple)
